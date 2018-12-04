@@ -1,27 +1,35 @@
 import cv2
 import numpy as np
+import math
 
 kernelOpen = np.ones((5, 5))
 kernelClose = np.ones((20, 20))
-cap = cv2.VideoCapture("Test3.mp4")
+cap = cv2.VideoCapture("test2_crop2.mp4")
 font = cv2.FONT_HERSHEY_SIMPLEX
 
 textBlue = "Shoulder"
 textRed = "Elbow"
 textGreen = "Hand"
 
+def distance(x1_y1,x2_y2):
+    x1,y1 =x1_y1
+    x2,y2 =x2_y2
+    dist = math.sqrt((math.fabs(x2-x1))**2+((math.fabs(y2-y1)))**2)
+    return dist
+
+
 while 1:
     _, frame = cap.read()
     HSV = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-    lower_blue = np.array([90, 50, 80])
-    upper_blue = np.array([110, 255, 255])
+    lower_blue = np.array([0, 168, 0])
+    upper_blue = np.array([105, 255, 204])
 
-    lower_green = np.array([38, 82, 92])
-    upper_green = np.array([75, 255, 255])
+    lower_green = np.array([60, 40, 0])
+    upper_green = np.array([83, 152, 255])
 
-    lower_red = np.array([169, 100, 100])
-    upper_red = np.array([190, 255, 255])
+    lower_red = np.array([123, 134, 0])
+    upper_red = np.array([255, 255, 255])
 
     maskBlue = cv2.inRange(HSV, lower_blue, upper_blue)
     maskGreen = cv2.inRange(HSV, lower_green, upper_green)
@@ -42,8 +50,14 @@ while 1:
         x, y, w, h = cv2.boundingRect(contsBlue[i])
         cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 255, 255), 2)
         cv2.putText(frame, textBlue, (x, y + h), font, 1.0, (0, 255, 255))
+        blueRectWidth = int(w/2)
+        blueRectHeight = int(h/2)
+        blueXCenter = int(x+blueRectWidth)
+        blueYCenter = int(y+blueRectHeight)
+
 
     #Red Tracking Conts
+
 
     maskOpenRed = cv2.morphologyEx(maskRed, cv2.MORPH_OPEN, kernelOpen)
     maskCloseRed = cv2.morphologyEx(maskOpenRed, cv2.MORPH_CLOSE, kernelClose)
@@ -56,6 +70,10 @@ while 1:
         x, y, w, h = cv2.boundingRect(contsRed[i])
         cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 255, 255), 2)
         cv2.putText(frame, textRed, (x, y + h), font, 1.0, (0, 255, 255))
+        redRectWidth = int(w/2)
+        redRectHeight = int(h/2)
+        redXCenter = int(x+redRectWidth)
+        redYCenter = int(y+redRectHeight)
 
      # Green Tracking Conts
 
@@ -70,7 +88,24 @@ while 1:
         x, y, w, h = cv2.boundingRect(contsGreen[i])
         cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 255, 255), 2)
         cv2.putText(frame, textGreen, (x, y + h), font, 1.0, (0, 255, 255))
+        greenRectWidth = int(w/2)
+        greenRectHeight = int(h/2)
+        greenXCenter = int(x+greenRectWidth)
+        greenYCenter = int(y+greenRectHeight)
 
+    cv2.line(frame, (redXCenter,redYCenter), (blueXCenter,blueYCenter),(255,255,255),2)
+    cv2.line(frame, (redXCenter, redYCenter), (greenXCenter, greenYCenter), (255, 255, 255), 2)
+
+    # Albue/Skulder trekant
+    hypotenuse = distance((redXCenter,redYCenter), (blueXCenter,blueYCenter))
+    horizontal = distance((redXCenter,redYCenter),(blueXCenter,redYCenter))
+    thirdline = distance((blueXCenter,blueYCenter), (blueXCenter,redYCenter))
+    angle = np.arcsin((thirdline/hypotenuse))*180/math.pi
+    cv2.line(frame,(redXCenter,redYCenter),(blueXCenter,blueYCenter),(255,255,255),2)
+    cv2.line(frame, (redXCenter, redYCenter), (blueXCenter, redYCenter), (255, 255, 255), 2)
+    cv2.line(frame, (blueXCenter, blueYCenter), (blueXCenter, redYCenter), (255, 255, 255), 2)
+    cv2.putText(frame,str(int(angle)),(redXCenter-30,redYCenter),font, 1.0, (0, 255, 255))
+    
     cv2.imshow('frame', frame)
     cv2.imshow('mask', mask)
     # cv2.imshow('maskREd', maskRed)
