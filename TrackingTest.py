@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import math
+from playsound import playsound
 
 kernelOpen = np.ones((5, 5))
 kernelClose = np.ones((20, 20))
@@ -105,7 +106,13 @@ while 1:
     cv2.line(frame, (redXCenter, redYCenter), (blueXCenter, redYCenter), (255, 255, 255), 2)
     cv2.line(frame, (blueXCenter, blueYCenter), (blueXCenter, redYCenter), (255, 255, 255), 2)
     cv2.putText(frame,str(int(angle)),(redXCenter-30,redYCenter),font, 1.0, (0, 255, 255))
-    
+
+    # Afspiller lyd hvis angle er indenfor bestemte intervaller
+    if angle < 61 and angle > 55:
+        playsound('beepSound.wav',False)
+    if angle < 45 and angle > 35:
+        playsound('beepSound.wav',False)
+
     cv2.imshow('frame', frame)
     cv2.imshow('mask', mask)
     # cv2.imshow('maskREd', maskRed)
