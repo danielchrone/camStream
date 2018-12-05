@@ -11,13 +11,13 @@ font = cv2.FONT_HERSHEY_SIMPLEX
 textBlue = "Shoulder"
 textRed = "Elbow"
 textGreen = "Hand"
+textAngle = "Your arm is in the wrong angle!"
 
 def distance(x1_y1,x2_y2):
-    x1,y1 =x1_y1
-    x2,y2 =x2_y2
+    x1,y1 = x1_y1
+    x2,y2 = x2_y2
     dist = math.sqrt((math.fabs(x2-x1))**2+((math.fabs(y2-y1)))**2)
     return dist
-
 
 while 1:
     _, frame = cap.read()
@@ -112,6 +112,8 @@ while 1:
         playsound('beepSound.wav',False)
     if angle < 45 and angle > 35:
         playsound('beepSound.wav',False)
+    if angle < 61 and angle > 10:
+        cv2.putText(frame, textAngle, (550,100), font, 1.15, (0,0,255),3)
 
     cv2.imshow('frame', frame)
     cv2.imshow('mask', mask)
