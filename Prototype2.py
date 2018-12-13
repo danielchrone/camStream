@@ -22,6 +22,9 @@ def distance(x1_y1,x2_y2):
 while 1:
     _, frame = cap.read()
     HSV = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    if _ == False:
+        print('Video is done!')
+        break
 
     lower_blue = np.array([100, 150, 25])
     upper_blue = np.array([150, 255, 255])
@@ -100,19 +103,21 @@ while 1:
     # Albue/Skulder trekant
     hypotenuse = distance((redXCenter,redYCenter), (blueXCenter,blueYCenter))
     horizontal = distance((redXCenter,redYCenter),(blueXCenter,redYCenter))
-    thirdline = distance((blueXCenter,blueYCenter), (blueXCenter,redYCenter))
-    angle = np.arcsin((thirdline/hypotenuse))*180/math.pi
-    cv2.line(frame,(redXCenter,redYCenter),(blueXCenter,blueYCenter),(255,255,255),2)
+    vertical = distance((blueXCenter,blueYCenter), (blueXCenter,redYCenter))
+    if horizontal == 0:
+        cv2.putText(frame, '90', (redXCenter - 30, redYCenter), font, 1.0, (0, 255, 255))
+    else:
+        degreeAngle = math.degrees(math.atan(vertical / horizontal))
+        cv2.putText(frame, str(int(degreeAngle)), (redXCenter - 30, redYCenter), font, 1.0, (0, 255, 255))
     cv2.line(frame, (redXCenter, redYCenter), (blueXCenter, redYCenter), (255, 255, 255), 2)
     cv2.line(frame, (blueXCenter, blueYCenter), (blueXCenter, redYCenter), (255, 255, 255), 2)
-    cv2.putText(frame,str(int(angle)),(redXCenter-30,redYCenter),font, 1.0, (0, 255, 255))
 
     # Afspiller lyd hvis angle er indenfor bestemte intervaller
-    if angle < 61 and angle > 55:
+    if degreeAngle < 61 and degreeAngle > 55:
         playsound('beepSound.wav',False)
-    if angle < 45 and angle > 35:
+    if degreeAngle < 45 and degreeAngle > 35:
         playsound('beepSound.wav',False)
-    if angle < 61 and angle > 10:
+    if degreeAngle < 61 and degreeAngle > 10:
         cv2.putText(frame, textAngle, (550,100), font, 1.15, (0,0,255),3)
 
     cv2.imshow('frame', frame)
@@ -121,7 +126,5 @@ while 1:
     # cv2.imshow('maskGreen', maskGreen)
     #cv2.imshow('res', res)
     k = cv2.waitKey(5) & 0xFF
-    if k == 27:
-        break
 
 cv2.destroyAllWindows()
